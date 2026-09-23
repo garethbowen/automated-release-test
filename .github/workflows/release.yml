@@ -21,10 +21,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
+      - name: Install
+        run: npm ci
 
       - name: Inputs received
         run: |
-          echo "Deploying to environment: ${{ inputs.version }}"
+          echo "Releasing version: ${{ inputs.version }}"
 
       - name: Configure Git Bot Identity
         run: |
