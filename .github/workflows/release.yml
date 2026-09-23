@@ -1,0 +1,39 @@
+name: Release
+
+# Defines the trigger for the workflow
+on:
+  workflow_dispatch:
+    # Optional: Define inputs that appear in the GitHub UI when triggered
+    inputs:
+      version:
+        description: 'Version'
+        required: true
+        type: string
+
+permissions:
+  id-token: write # Required for OIDC
+  contents: write # Required for pushing package version tags
+
+jobs:
+  run-steps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Inputs received
+        run: |
+          echo "Deploying to environment: ${{ inputs.version }}"
+
+      - name: Configure Git Bot Identity
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Do the release
+        run: |
+          git tag ${{ inputs.version }}
+          
+      - name: Push package version tags
+        run: git push origin --tags
