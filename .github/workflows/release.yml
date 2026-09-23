@@ -1,48 +1,34 @@
 name: Release
 
-# Defines the trigger for the workflow
 on:
   workflow_dispatch:
-    # Optional: Define inputs that appear in the GitHub UI when triggered
     inputs:
       version:
         description: 'Version'
         required: true
         type: string
 
-permissions:
-  id-token: write # Required for OIDC
-  contents: write # Required for pushing package version tags
+#permissions:
+#  id-token: write # Required for OIDC
+#  contents: write # Required for pushing package version tags
 
 jobs:
-  run-steps:
+
+  version:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write # to check out repo (actions/checkout) and commit version changes (changesets/action/version)
+      pull-requests: write # to create pull request (changesets/action/version)
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Install
-        run: npm ci
+      - name: Check out repo
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false # recommended: do not persist git credentials on disk
 
-      - name: Inputs received
-        run: |
-          echo "Releasing version: ${{ inputs.version }}"
+      - name: Install dependencies
+        run: npm install
 
-      - name: Configure Git Bot Identity
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Version packages
+        id: version
+        uses: changesets/action/version@v2
 
-      - name: Do the release
-        run: |
-          npm run changeset version
-          npm run install
-          git add .
-          git commit -m "chore: update version and changelogs for {{ inputs.version }}"
-          git push
-
-      - name: Push package version tags
-        run: |
-          git tag ${{ inputs.version }}
-          git push origin --tags
