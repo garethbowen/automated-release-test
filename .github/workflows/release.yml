@@ -33,7 +33,13 @@ jobs:
 
       - name: Do the release
         run: |
-          git tag ${{ inputs.version }}
-          
+          npm run changeset version
+          npm run install
+          git add .
+          git commit -m "chore: update version and changelogs for {{ inputs.version }}"
+          git push
+
       - name: Push package version tags
-        run: git push origin --tags
+        run: |
+          git tag ${{ inputs.version }}
+          git push origin --tags
